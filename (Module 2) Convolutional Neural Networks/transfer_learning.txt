@@ -1,0 +1,3 @@
+ConvNet features:
+1.) in early layers: more generic features;
+2.) in later layers: more original-dataset-specific features.

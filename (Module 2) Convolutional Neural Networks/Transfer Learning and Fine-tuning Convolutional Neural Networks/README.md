@@ -1,8 +1,8 @@
 # Transfer Learning
 * Pretrain a ConvNet on a very large dataset and then use the ConvNet either as an initialization or a fixed feature extractor for the task of interest;
 
-* ConvNet features:
-   1.) in early layers: more generic features;
+* ConvNet features:  
+   1.) in early layers: more generic features;  
    2.) in later layers: more original-dataset-specific features.  
 
 
@@ -39,10 +39,10 @@
 
 * __Fine-grained classification__: distinguish between sub-categories of a category such as the different species of flowers, dog breeds.  
 * Fine-grained recognition datasets:  
-   1. ) Caltech-UCSD Birds (CUB) 200-2011:  
+   1. Caltech-UCSD Birds (CUB) 200-2011:  
        * 200 classes;  
        * 11,788 images: 5,994 for train and 5,794 for test.  
-   2. ) Oxford 102 flowers dataset:  
+   2. Oxford 102 flowers dataset:  
        * 102 categories;  
        * each category contains 40 to 258 images;  
        * the dataset provides segmentation for all the images.  
@@ -50,12 +50,12 @@
 * __Attribute detection__
 * An attribute within the context of computer vision is defined as some semantic or abstract quality which different instances/categories share.  
 * Attribute detection datasets:   
-   1. ) UIUC 64 object attributes dataset:  
+   1. UIUC 64 object attributes dataset:  
 	   * 3 categories of attributes:  
        * shape (e.g. is 2D boxy);   
        * part (e.g. has head);  
        * material (e.g. is furry).  
-   2. ) H3D dataset:  
+   2. H3D dataset:  
       * defines 9 attributes for a subset of the person images from PASCAL VOC 2007;  
       * the attributes range from "has glasses" to "is male".  
 

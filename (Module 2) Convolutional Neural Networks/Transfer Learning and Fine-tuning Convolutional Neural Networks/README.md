@@ -1,8 +1,9 @@
 # Transfer Learning
 * Pretrain a ConvNet on a very large dataset and then use the ConvNet either as an initialization or a fixed feature extractor for the task of interest;
+
 * ConvNet features:
-   1. in early layers: more generic features;
-   2. in later layers: more original-dataset-specific features.  
+   1.) in early layers: more generic features;
+   2.) in later layers: more original-dataset-specific features.  
 
 
 ## [DeCAF: A Deep Convolutional Activation Feature for Generic Visual Recognition (Donahue _et al._, 2013)](https://arxiv.org/abs/1310.1531) 
@@ -15,8 +16,8 @@
 
 ## [How transferable are features in deep neural networks? (Yosinski _et al._, 2014)](https://arxiv.org/abs/1411.1792)
 * In case of many deep neural networks trained on natural images:  
-   1. First-layer features: general in that they are applicable to many datasets and tasks;  
-   2. Last-layer features: specific to a particular dataset or task;  
+   1.) First-layer features: general in that they are applicable to many datasets and tasks;  
+   2.) Last-layer features: specific to a particular dataset or task;  
 
 * Features must eventually transition from general to specific by the last layer of the network;  
 
@@ -38,23 +39,23 @@
 
 * __Fine-grained classification__: distinguish between sub-categories of a category such as the different species of flowers, dog breeds.  
 * Fine-grained recognition datasets:  
-   1. Caltech-UCSD Birds (CUB) 200-2011:  
+   1. ) Caltech-UCSD Birds (CUB) 200-2011:  
        * 200 classes;  
        * 11,788 images: 5,994 for train and 5,794 for test.  
-   2. Oxford 102 flowers dataset:  
+   2. ) Oxford 102 flowers dataset:  
        * 102 categories;  
        * each category contains 40 to 258 images;  
        * the dataset provides segmentation for all the images.  
 
 * __Attribute detection__
 * An attribute within the context of computer vision is defined as some semantic or abstract quality which different instances/categories share.  
-* Attribute detection datasets:  
-   1. UIUC 64 object attributes dataset:  
-       * 3 categories of attributes:  
+* Attribute detection datasets:   
+   1. ) UIUC 64 object attributes dataset:  
+	   * 3 categories of attributes:  
        * shape (e.g. is 2D boxy);   
        * part (e.g. has head);  
        * material (e.g. is furry).  
-   2. H3D dataset:  
+   2. ) H3D dataset:  
       * defines 9 attributes for a subset of the person images from PASCAL VOC 2007;  
       * the attributes range from "has glasses" to "is male".  
 

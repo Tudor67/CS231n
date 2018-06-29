@@ -14,14 +14,14 @@
 * A simple linear model can have adversarial examples if its input has sufficient dimensionality.
   Softmax regression is vulnerable to adversarial examples.
 
-* __Fast gradient sign method__ of generating adversarial examples:
-  x + eta => new_x (adversarial example)
-  eta = eps * sign (gradientxJ(theta, x, y)).
-  eps - a small constant (for example 0.007),
-  theta - the parameters of a model,
-  x - the input to the model,
-  y - the targets associated with x (for machine learning tasks that have targets),
-  J(theta, x, y) - the cost used to train the neural network.
+* __Fast gradient sign method__ of generating adversarial examples:  
+  x + eta => new_x (adversarial example)  
+  eta = eps * sign (gradientxJ(theta, x, y)).  
+  eps - a small constant (for example 0.007),  
+  theta - the parameters of a model,  
+  x - the input to the model,  
+  y - the targets associated with x (for machine learning tasks that have targets),  
+  J(theta, x, y) - the cost used to train the neural network.  
 
 * The authors found that above method reliably causes a wide variety of models to misclassify their input.
 

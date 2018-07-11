@@ -22,36 +22,36 @@
   L &= \frac{1}{n} \sum_{i}^{n} L_{i} 
        + \lambda * \sum_{j}^{d} \sum_{k}^{c} W_{j,k}^{2}\\
   L_{i} &= -\ln{p_{y_{i}}} [cross-entropy]\\
-  p_{k} &= \frac {e^{z_{y_{k}}}}{\sum_{j}^{c} e^{z_{j}}} [softmax]\\
-  z_{j} &= X * W_{j} [score-for-example-X-to-belong-to-class-j]\\
-  \frac {\partial L_{i}}{\partial p_{i}} &= -\frac {1}{p_{i}}\\
-  \frac {\partial p_{k}}{\partial z_{y_{k}}} &= 
-        \frac {e^{z_{y_{k}}}\sum_{j}^{c} e^{z_{j}} - e^{z_{y_{k}}}e^{z_{y_{k}}}}
+  p_{k} &= \frac {e^{z_{k}}}{\sum_{j}^{c} e^{z_{j}}} [softmax]\\
+  z_{j} &= X * W_{j} [class-score-z_{j}-for-example-X]\\
+  \frac {\partial L_{i}}{\partial p_{y_{i}}} &= -\frac {1}{p_{y_{i}}}\\
+  \frac {\partial p_{k}}{\partial z_{k}} &= 
+        \frac {e^{z_{k}}\sum_{j}^{c} e^{z_{j}} - e^{z_{k}}e^{z_{k}}}
               {(\sum_{j}^{c} e^{z_{j}})^2} 
-      = \frac {e^{z_{y_{k}}}}{\sum_{j}^{c} e^{z_{j}}}
+      = \frac {e^{z_{y_{i}}}}{\sum_{j}^{c} e^{z_{j}}}
         -
-        \frac {e^{z_{y_{k}}}}{\sum_{j}^{c} e^{z_{j}}}
-        \frac {e^{z_{y_{k}}}}{\sum_{j}^{c} e^{z_{j}}}
+        \frac {e^{z_{k}}}{\sum_{j}^{c} e^{z_{j}}}
+        \frac {e^{z_{k}}}{\sum_{j}^{c} e^{z_{j}}}
       = p_{k} - p_{k}^2
       = p_{k}(1 - p_{k})\\
   \frac {\partial p_{k}}{\partial z_{l}} &= 
-        -\frac {e^{z_{y_{k}}}e^{z_{l}}}
+        -\frac {e^{z_{k}}e^{z_{l}}}
                {(\sum_{j}^{c} e^{z_{j}})^2}
-       = -\frac {e^{z_{y_{k}}}}{\sum_{j}^{c} e^{z_{j}}}
+       = -\frac {e^{z_{k}}}{\sum_{j}^{c} e^{z_{j}}}
           \frac {e^{z_{l}}}{\sum_{j}^{c} e^{z_{j}}} 
-       = -p_{k}p_{l} [l \neq y_{k}]\\
+       = -p_{k}p_{l} [l \neq k]\\
   \frac {\partial z_{j}}{\partial w_{j}} &= X\\
   \frac {\partial L_{i}}{\partial w_{y_{i}}} &=
-         \frac {\partial L_{i}}{\partial p_{i}}
-         \frac {\partial p_{i}}{\partial z_{y_{i}}}
+         \frac {\partial L_{i}}{\partial p_{y_{i}}}
+         \frac {\partial p_{y_{i}}}{\partial z_{y_{i}}}
          \frac {\partial z_{y_{i}}}{\partial w_{y_{i}}}
-      = -\frac {1}{p_{i}}{p_{i}}(1 - p_{i})X
-      = (p_{i} - 1)X [y_{i}, chain- rule]\\
+      = -\frac {1}{p_{y_{i}}}{p_{y_{i}}}(1 - p_{y_{i}})X
+      = (p_{y_{i}} - 1)X [y_{i}, chain- rule]\\
   \frac {\partial L_{i}}{\partial w_{j}} &=
-         \frac {\partial L_{i}}{\partial p_{i}}
-         \frac {\partial p_{i}}{\partial z_{j}}
+         \frac {\partial L_{i}}{\partial p_{y_{i}}}
+         \frac {\partial p_{y_{i}}}{\partial z_{j}}
          \frac {\partial z_{j}}{\partial w_{j}}
-      = -\frac {1}{p_{i}}(-p_{i}p_{j})X
+      = -\frac {1}{p_{y_{i}}}(-p_{y_{i}}p_{j})X
       = p_{j}X [j \neq y_{i}, chain- rule]
   \end{align*}
 

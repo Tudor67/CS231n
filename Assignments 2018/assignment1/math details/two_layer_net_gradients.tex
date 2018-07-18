@@ -1,0 +1,201 @@
+% preamble
+\documentclass{article}
+
+\title{Two layer net gradients}
+\author{}
+\date{\vspace{-5ex}}
+
+% packages
+\usepackage[a4paper, top=0.8in, bottom=0.8in, left=1.75in, right=1.85in]{geometry}
+\usepackage{amsmath}
+
+% main document
+\begin{document}
+  \maketitle
+
+  The neural network that was used for image classification has the following structure:
+  \begin{enumerate}
+    \item[0.)] Input layer $(X)$
+    \item[1.)] Hidden layer $(W_{(1)}, b_{(1)})$
+    \item[2.)] Output layer $(W_{(2)}, b_{(2)})$
+  \end{enumerate}
+
+  \noindent
+  \begin{flalign*}
+    &\text{First layer (hidden layer):}&\\
+    &\hspace{2ex} z_{(1)} = XW_{(1)} + b_{(1)}\\
+    &\hspace{2ex} a_{(1)} = relu(z_{(1)})\\
+    &\text{Second layer (output layer):}\\
+    &\hspace{2ex} z_{(2)} = a_{(1)}W_{(2)} + b_{(2)}\\
+    &\hspace{2ex} p = softmax(z_{(2)})
+  \end{flalign*}
+
+  \noindent Notation:
+  \begin{itemize}
+    \item $X$ - the input ($X$.shape=$(n, d)$, $X_{i}$ - the \textit{i}th example with shape=$(1, d)$)
+    \item $W_{(1)}, b_{(1)}$ - the weights and bias arrays for the hidden layer;
+    \item $W_{(2)}, b_{(2)}$ - the weights and bias arrays for the output layer;
+    \item $n$ - number of train examples $(batch\_size)$;
+    \item $d$ - number of dimensions of an example;
+    \item $c$ - number of classes (10 classes for CIFAR-10);
+    \item $y$ - labels of correct classes ($y_{i}$ - the correct label for the \textit{i}th example);
+  \end{itemize}
+
+  To quantify the unhappiness with predictions on the training set, cross-entropy loss with regularization was used. All the details about this loss function and its gradients are presented below.
+  \begin{align*}
+    &L = \frac{1}{n} \sum_{i}^{n} L_{i} 
+          + \lambda \sum_{l\_nr}^{2} \sum_{j}^{d} \sum_{k}^{c} W_{(l\_nr)(j,k)}^{2} \text{ [cross-entropy loss with regularization for a batch of size $n$]}\\
+    &L_{i} = -\ln{p_{y_{i}}} \text{ [cross-entropy loss for example \textit{i}]}\\
+    &p_{k} = \frac {e^{z_{(2)(k)}}}{\sum_{j}^{c} e^{z_{(2)(j)}}} \text{ [softmax]}\\
+    &z_{(2)(j)} = X_{i}W_{(2)(j)} + b_{(2)(j)} \text{ [class score $z_{(2)(j)}$ for example $X_{i}$]}\\
+    &a_{(1)(i)} = relu(z_{(1)(i)}) = maximum(0, z_{(1)(i)})
+  \end{align*}
+  
+  \noindent
+  \begin{flalign*}
+    &\text{Second layer gradients (for $W_{(2)}$ and $b_{(2)}$):}&\\
+    &\hspace{2ex} \frac {\partial z_{(2)(j)}}{\partial W_{(2)(j)}} = a_{(1)(i)}\\
+    &\hspace{2ex} \frac {\partial z_{(2)(j)}}{\partial b_{(2)(j)}} = 1\\
+    &\hspace{2ex} \frac {\partial z_{(2)(j)}}{\partial a_{(1)(i)}} = W_{(2)(j)} \text{ [$a_{(1)(i)}$ is a row vector that represents the activations of the \textit{i}th example (1st layer)]}\\
+    &\hspace{2ex} \frac {\partial p_{k}}{\partial z_{(2)(k)}} = 
+                    \frac {e^{z_{(2)(k)}}\sum_{j}^{c} e^{z_{(2)(j)}} - e^{z_{(2)(k)}}e^{z_{(2)(k)}}}
+                          {(\sum_{j}^{c} e^{z_{(2)(j)}})^2} 
+                  = \frac {e^{z_{(2)(k)}}}{\sum_{j}^{c} e^{z_{(2)(j)}}}
+                      -
+                    \frac {e^{z_{(2)(k)}}}{\sum_{j}^{c} e^{z_{(2)(j)}}}
+                    \frac {e^{z_{(2)(k)}}}{\sum_{j}^{c} e^{z_{(2)(j)}}}
+                  = p_{k} - p_{k}^2
+                  = p_{k}(1 - p_{k})\\
+    &\hspace{2ex} \frac {\partial p_{k}}{\partial z_{(2)(l)}} = 
+                    -\frac {e^{z_{(2)(k)}}e^{z_{(2)(l)}}}
+                           {(\sum_{j}^{c} e^{z_{(2)(j)}})^2}
+                  = -\frac {e^{z_{(2)(k)}}}{\sum_{j}^{c} e^{z_{(2)(j)}}}
+                    \frac {e^{z_{(2)(l)}}}{\sum_{j}^{c} e^{z_{(2)(j)}}} 
+                  = -p_{k}p_{l} [l \neq k]\\
+    &\hspace{2ex} \frac {\partial L_{i}}{\partial p_{y_{i}}} = -\frac {1}{p_{y_{i}}}\\
+    &\hspace{2ex} \frac {\partial L_{i}}{\partial W_{(2)(y_{i})}} =
+                    \frac {\partial L_{i}}{\partial p_{y_{i}}}
+                    \frac {\partial p_{y_{i}}}{\partial z_{(2)(y_{i})}}
+                    \frac {\partial z_{(2)(y_{i})}}{\partial W_{(2)(y_{i})}}
+                  = -\frac {1}{p_{y_{i}}}{p_{y_{i}}}(1 - p_{y_{i}})a_{(1)(i)}
+                  = (p_{y_{i}} - 1)a_{(1)(i)} [y_{i}]\\
+    &\hspace{2ex} \frac {\partial L_{i}}{\partial W_{(2)(j)}} =
+                    \frac {\partial L_{i}}{\partial p_{y_{i}}}
+                    \frac {\partial p_{y_{i}}}{\partial z_{(2)(j)}}
+                    \frac {\partial z_{(2)(j)}}{\partial W_{(2)(j)}}
+                  = -\frac {1}{p_{y_{i}}}(-p_{y_{i}}p_{j})a_{(1)(i)}
+                  = p_{j}a_{(1)(i)} [j \neq y_{i}]\\
+    &\hspace{2ex} \frac {\partial L_{i}}{\partial W_{(2)(j)}} =
+                    \frac {\partial L_{i}}{\partial p_{y_{i}}}
+                    \frac {\partial p_{y_{i}}}{\partial z_{(2)(j)}}
+                    \frac {\partial z_{(2)(j)}}{\partial W_{(2)(j)}}
+                  = \begin{cases}
+                      (p_{y_{i}} - 1)a_{(1)(i)} & \text{if $j=y_{i}$}\\
+                      p_{j}a_{(1)(i)} & \text{if $j \neq y_{i}$}
+                    \end{cases}\\
+    &\hspace{2ex} \frac {\partial L_{i}}{\partial b_{(2)(j)}} =
+                    \frac {\partial L_{i}}{\partial p_{y_{i}}}
+                    \frac {\partial p_{y_{i}}}{\partial z_{(2)(j)}}
+                    \frac {\partial z_{(2)(j)}}{\partial b_{(2)(j)}}
+                  = \begin{cases}
+                      (p_{y_{i}} - 1) & \text{if $j=y_{i}$}\\
+                      p_{j} & \text{if $j \neq y_{i}$}
+                    \end{cases}
+  \end{flalign*}
+
+  \noindent
+  \begin{flalign*}
+    &\text{First layer gradients (for $W_{(1)}$ and $b_{(1)}$):}&\\
+    &\hspace{2ex} \frac {\partial z_{(1)(j)}}{\partial W_{(1)(j)}} = X_{i}\\
+    &\hspace{2ex} \frac {\partial z_{(1)(j)}}{\partial b_{(1)(j)}} = 1\\
+    &\hspace{2ex} \frac {\partial a_{(1)(i)}}{\partial z_{(1)(j)}} =
+                    \frac {\partial relu(z_{(1)(j)})}{\partial z_{(1)(j)}} 
+                  = \frac {\partial max(0, z_{(1)(j)})}{\partial z_{(1)(j)}} 
+                  = \begin{cases}
+                      1 & \text{if $z_{(1)(j)} > 0$}\\
+                      0 & \text{if $z_{(1)(j)} \leq 0$}
+                    \end{cases}\\
+    &\hspace{2ex} \frac {\partial a_{(1)(i)}}{\partial W_{(1)(j)}} =
+                    \frac {\partial a_{(1)(i)}}{\partial z_{(1)(j)}}
+                    \frac {\partial z_{(1)(j)}}{\partial W_{(1)(j)}} 
+                  = \begin{cases}
+                      X_{i} & \text{if $z_{(1)(j)} > 0$}\\
+                      0 & \text{if $z_{(1)(j)} \leq 0$}
+                    \end{cases}\\
+    &\hspace{2ex} \frac {\partial a_{(1)(i)}}{\partial b_{(1)(j)}} =
+                    \frac {\partial a_{(1)(i)}}{\partial z_{(1)(j)}}
+                    \frac {\partial z_{(1)(j)}}{\partial b_{(1)(j)}}
+                  = \begin{cases}
+                      1 & \text{if $z_{(1)(j)} > 0$}\\
+                      0 & \text{if $z_{(1)(j)} \leq 0$}
+                    \end{cases}\\
+    &\hspace{2ex} \frac {\partial L_{i}}{\partial W_{(1)(j)}} =
+                    \frac {\partial L_{i}}{\partial p_{y_{i}}}
+                    \frac {\partial p_{y_{i}}}{\partial z_{(2)(j)}}
+                    \frac {\partial z_{(2)(j)}}{\partial a_{(1)(i)}}
+                    \frac {\partial a_{(1)(i)}}{\partial z_{(1)(j)}}
+                    \frac {\partial z_{(1)(j)}}{\partial W_{(1)(j)}}
+                  = \begin{cases}
+                      j=y_{i}:  \begin{cases}
+                                  X^\top_{i} (p_{y_{i}} - 1) W^\top_{(2)(y_{i})} & \text{if $z_{(1)(j)} > 0$}\\
+                                  0 & \text{if $z_{(1)(j)} \leq 0$}
+                                \end{cases}\\
+                      j \neq y_{i}:  \begin{cases}
+                                      X^\top_{i} p_{j} W^\top_{(2)(y_{i})} & \text{if $z_{(1)(j)} > 0$}\\
+                                      0 & \text{if $z_{(1)(j)} \leq 0$}
+                                    \end{cases}
+                    \end{cases}\\
+                  &\hspace{11ex}= \begin{cases}
+                                    z_{(1)(j)} > 0: \begin{cases}
+                                                      X^\top_{i} (p_{y_{i}} - 1) W^\top_{(2)(y_{i})} & \text{if $j = y_{i}$}\\
+                                                      X^\top_{i} p_{j} W^\top_{(2)(y_{i})} & \text{if $j \neq  y_{i}$}
+                                                    \end{cases}\\
+                                    z_{(1)(j)} \leq 0: 0
+                                  \end{cases}\\
+    &\hspace{2ex} \frac {\partial L_{i}}{\partial b_{(1)(j)}} =
+                    \frac {\partial L_{i}}{\partial p_{y_{i}}}
+                    \frac {\partial p_{y_{i}}}{\partial z_{(2)(j)}}
+                    \frac {\partial z_{(2)(j)}}{\partial a_{(1)(i)}}
+                    \frac {\partial a_{(1)(i)}}{\partial z_{(1)(j)}}
+                    \frac {\partial z_{(1)(j)}}{\partial b_{(1)(j)}}
+                  = \begin{cases}
+                      j=y_{i}:  \begin{cases}
+                                  (p_{y_{i}} - 1)W^\top_{(2)(y_{i})} & \text{if $z_{(1)(j)} > 0$}\\
+                                  0 & \text{if $z_{(1)(j)} \leq 0$}
+                                \end{cases}\\
+                      j \neq y_{i}:  \begin{cases}
+                                      p_{j}W^\top_{(2)(y_{i})} & \text{if $z_{(1)(j)} > 0$}\\
+                                      0 & \text{if $z_{(1)(j)} \leq 0$}
+                                    \end{cases}
+                    \end{cases}\\
+                  &\hspace{10ex}= \begin{cases}
+                                    z_{(1)(j)} > 0: \begin{cases}
+                                                      (p_{y_{i}} - 1)W^\top_{(2)(y_{i})} & \text{if $j = y_{i}$}\\
+                                                      p_{j}W^\top_{(2)(y_{i})} & \text{if $j \neq  y_{i}$}
+                                                    \end{cases}\\
+                                    z_{(1)(j)} \leq 0: 0
+                                  \end{cases}
+  \end{flalign*}
+
+  \noindent
+  \begin{flalign*}
+    &\text{Gradients from the regularization loss (for $W_{(1)}, W_{(2)}$):}&\\
+    &\hspace{2ex} Reg\_loss = \lambda \sum_{l\_nr}^{2} \sum_{j}^{d} \sum_{k}^{c} W_{(l\_nr)(j,k)}^{2}\\
+    &\hspace{2ex} \frac {\partial Reg\_loss}{\partial W_{(l\_nr)(j,k)}} = 
+                    2 \lambda W_{(l\_nr)(j,k)}
+  \end{flalign*}
+
+  Previous gradients were calculated for the example $X_{i}$ that is a row vector with $d$ dimensions. The gradients for a batch of size $n$ can be calculated as the mean gradients from the data loss plus the gradients from the regularization loss.
+  \noindent
+  \begin{flalign*}
+    &\hspace{2ex} L = \frac{1}{n} \sum_{i}^{n} L_{i} 
+          + \lambda \sum_{l\_nr}^{2} \sum_{j}^{d} \sum_{k}^{c} W_{(l\_nr)(j,k)}^{2}&\\
+    &\hspace{2ex} \frac {\partial L}{\partial W_{(l\_nr)(j)}} =
+                  \frac{1}{n} \sum_{i}^{n} \frac{\partial L_{i}}{\partial W_{(l\_nr)(j)}}
+                  + 
+                  \frac {\partial Reg\_loss}{\partial W_{(l\_nr)(j,k)}}\\
+    &\hspace{2ex} \frac {\partial L}{\partial b_{(l\_nr)(j)}} =
+                  \frac{1}{n} \sum_{i}^{n} \frac{\partial L_{i}}{\partial b_{(l\_nr)(j)}}
+  \end{flalign*}
+
+\end{document}

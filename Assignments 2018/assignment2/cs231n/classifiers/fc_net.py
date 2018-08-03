@@ -190,6 +190,10 @@ class FullyConnectedNet(object):
                 
             self.params['W' + str(i + 1)] = weight_scale * np.random.randn(rows, cols)
             self.params['b' + str(i + 1)] = weight_scale * np.zeros(cols)
+            
+            if (self.normalization == 'batchnorm') and (i + 1 < self.num_layers): 
+                self.params['gamma' + str(i + 1)] = np.ones(cols)
+                self.params['beta' + str(i + 1)] = np.zeros(cols)
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -251,9 +255,18 @@ class FullyConnectedNet(object):
         l_cache = {}
         previous_activations = X
         for i in range(1, self.num_layers):
-            a_i, l_cache[i] = affine_relu_forward(previous_activations, 
-                                                  self.params['W' + str(i)],
-                                                  self.params['b' + str(i)])
+            if self.normalization == 'batchnorm':
+                a_i, l_cache[i] = affine_batchnorm_relu_forward(previous_activations, 
+                                                            self.params['W' + str(i)],
+                                                            self.params['b' + str(i)],
+                                                            self.params['gamma' + str(i)],
+                                                            self.params['beta' + str(i)],
+                                                            self.bn_params[i - 1])
+            else:
+                a_i, l_cache[i] = affine_relu_forward(previous_activations, 
+                                                      self.params['W' + str(i)],
+                                                      self.params['b' + str(i)])
+                
             previous_activations = a_i
         
         scores, l_cache[self.num_layers] = affine_forward(previous_activations,
@@ -298,10 +311,18 @@ class FullyConnectedNet(object):
         dout = da
         
         for i in range(self.num_layers - 1, 0, -1):
-            (da, dW, db) = affine_relu_backward(dout, l_cache[i])
-            grads['W' + str(i)] = dW
-            grads['b' + str(i)] = db
-            dout = da
+            if self.normalization == 'batchnorm':
+                (da, dW, db, dgamma, dbeta) = affine_batchnorm_relu_backward(dout, l_cache[i])
+                grads['W' + str(i)] = dW
+                grads['b' + str(i)] = db
+                grads['gamma' + str(i)] = dgamma
+                grads['beta' + str(i)] = dbeta
+                dout = da
+            else:
+                (da, dW, db) = affine_relu_backward(dout, l_cache[i])
+                grads['W' + str(i)] = dW
+                grads['b' + str(i)] = db
+                dout = da 
         
         for k in self.params.keys():
             if k.startswith('W'):

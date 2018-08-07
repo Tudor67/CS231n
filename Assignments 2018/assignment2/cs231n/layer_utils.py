@@ -54,11 +54,43 @@ def affine_batchnorm_relu_forward(x, w, b, gamma, beta, bn_param):
 
 def affine_batchnorm_relu_backward(dout, cache):
     """
-    Backward pass for the affine-batch-norm-relu convenience layer
+    Backward pass for the affine-batchnorm-relu convenience layer
     """
     fc_cache, batchnorm_cache, relu_cache = cache
     da_norm = relu_backward(dout, relu_cache)
     da, dgamma, dbeta = batchnorm_backward_alt(da_norm, batchnorm_cache)
+    dx, dw, db = affine_backward(da, fc_cache)
+    return dx, dw, db, dgamma, dbeta
+
+
+def affine_layernorm_relu_forward(x, w, b, gamma, beta, ln_param):
+    """
+    Convenience layer that performs an affine transform followed by layernorm and a ReLU
+
+    Inputs:
+    - x: Input to the affine layer
+    - w, b: Weights for the affine layer
+    - gamma, beta: Weights for the layernorm layer
+    - ln_param: Parameters for the layernorm layer
+
+    Returns a tuple of:
+    - out: Output from the ReLU
+    - cache: Object to give to the backward pass
+    """
+    a, fc_cache = affine_forward(x, w, b)
+    a_norm, layernorm_cache = layernorm_forward(a, gamma, beta, ln_param)
+    out, relu_cache = relu_forward(a_norm)
+    cache = (fc_cache, layernorm_cache, relu_cache)
+    return out, cache
+
+
+def affine_layernorm_relu_backward(dout, cache):
+    """
+    Backward pass for the affine-layernorm-relu convenience layer
+    """
+    fc_cache, layernorm_cache, relu_cache = cache
+    da_norm = relu_backward(dout, relu_cache)
+    da, dgamma, dbeta = layernorm_backward(da_norm, layernorm_cache)
     dx, dw, db = affine_backward(da, fc_cache)
     return dx, dw, db, dgamma, dbeta
 

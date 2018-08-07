@@ -1,6 +1,6 @@
 # Batch normalization
 
-## [Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift (Ioffe and Szegedy, 2015)](https://arxiv.org/pdf/1502.03167)
+## [Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift (Ioffe and Szegedy, 2015)](https://arxiv.org/abs/1502.03167)
 * In the case of deep neural networks, training is considered to be complicated by the fact that the distribution of each layer's inputs changes during training, as the parameters of the previous layers change.
 This slows down the training (by requiring lower learning rates and careful parameter initialization) and makes it hard to train models with saturating nonlinearities. This phenomenon is known as __internal covariate shift__, and is addressed by normalizing layer inputs.
 

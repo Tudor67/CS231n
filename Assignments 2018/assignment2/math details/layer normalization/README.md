@@ -20,3 +20,9 @@
 * Both __Batch__ and __Layer Normalization__:  
    1.) Each neuron has its own adaptive scale and bias;  
    2.) Normalization is applied before the non-linearity.
+
+## Backward pass of layer normalization
+**My notes**:  
+![layer_norm_1](./images/layer_norm_1.jpg)  
+![layer_norm_2](./images/layer_norm_2.jpg)  
+![layer_norm_3](./images/layer_norm_3.jpg)

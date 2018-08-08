@@ -260,6 +260,7 @@ class FullyConnectedNet(object):
             affine_norm_relu_forward = affine_layernorm_relu_forward
         
         l_cache = {}
+        dropout_cache = {}
         previous_activations = X
         for i in range(1, self.num_layers):
             if self.normalization in ['batchnorm', 'layernorm']:
@@ -273,6 +274,9 @@ class FullyConnectedNet(object):
                 a_i, l_cache[i] = affine_relu_forward(previous_activations, 
                                                       self.params['W' + str(i)],
                                                       self.params['b' + str(i)])
+                
+            if self.use_dropout:
+                a_i, dropout_cache[i] = dropout_forward(a_i, self.dropout_param)
                 
             previous_activations = a_i
         
@@ -324,6 +328,9 @@ class FullyConnectedNet(object):
         dout = da
         
         for i in range(self.num_layers - 1, 0, -1):
+            if self.use_dropout:
+                dout = dropout_backward(dout, dropout_cache[i])
+                
             if self.normalization in ['batchnorm', 'layernorm']:
                 (da, dW, db, dgamma, dbeta) = affine_norm_relu_backward(dout, l_cache[i])
                 grads['W' + str(i)] = dW

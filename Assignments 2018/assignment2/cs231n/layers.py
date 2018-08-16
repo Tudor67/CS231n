@@ -498,7 +498,38 @@ def conv_forward_naive(x, w, b, conv_param):
     # TODO: Implement the convolutional forward pass.                         #
     # Hint: you can use the function np.pad for padding.                      #
     ###########################################################################
-    pass
+    pad = conv_param['pad']
+    stride = conv_param['stride']
+    
+    (N, C, H, W) = x.shape
+    (F, _, HH, WW) = w.shape
+    out_H = 1 + (H + 2 * pad - HH) / stride
+    out_W = 1 + (W + 2 * pad - WW) / stride
+    
+    out = np.zeros((N, F, out_H, out_W))
+    x_pad = np.pad(x, [(0, 0), (0, 0), (pad, pad), (pad, pad)], 'constant')
+    
+    for idx in range(N):
+        out_i = 0
+        
+        for i in range(HH / 2, H + stride, stride):
+            i_start = i - HH / 2
+            i_end = i + HH / 2 + HH % 2
+            out_j = 0
+            
+            for j in range(WW / 2, W + stride, stride):
+                j_start = j - WW / 2
+                j_end = j + WW / 2 + WW % 2
+                
+                for k in range(F):
+                    out[idx, k, out_i, out_j] = np.sum(x_pad[idx, :,\
+                                                             i_start:i_end,\
+                                                             j_start:j_end]\
+                                                       * w[k]) + b[k]
+                
+                out_j += 1
+                
+            out_i += 1
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -523,7 +554,42 @@ def conv_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
-    pass
+    (x, w, _, conv_param) = cache
+    pad = conv_param['pad']
+    stride = conv_param['stride']
+    
+    (N, C, H, W) = x.shape
+    (F, _, HH, WW) = w.shape
+    
+    x_pad = np.pad(x, [(0, 0), (0, 0), (pad, pad), (pad, pad)], 'constant')
+    dx_pad = np.zeros_like(x_pad)
+    dw = np.zeros_like(w)
+    
+    for idx in range(N):
+        out_i = 0
+        
+        for i in range(HH / 2, H + stride, stride):
+            i_start = i - HH / 2
+            i_end = i + HH / 2 + HH % 2
+            out_j = 0
+            
+            for j in range(WW / 2, W + stride, stride):
+                j_start = j - WW / 2
+                j_end = j + WW / 2 + WW % 2
+                
+                for k in range(F):                    
+                    dw[k] += x_pad[idx, :, i_start:i_end, j_start:j_end]\
+                             *\
+                             dout[idx, k, out_i, out_j]
+                    
+                    dx_pad[idx, :, i_start:i_end, j_start:j_end] += w[k] * dout[idx, k, out_i, out_j]
+                    
+                out_j += 1
+                
+            out_i += 1
+    
+    dx = dx_pad[:, :, pad:-pad, pad:-pad]
+    db = np.sum(dout, axis=(0, 2, 3))
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -553,7 +619,30 @@ def max_pool_forward_naive(x, pool_param):
     ###########################################################################
     # TODO: Implement the max-pooling forward pass                            #
     ###########################################################################
-    pass
+    pool_height = pool_param['pool_height']
+    pool_width = pool_param['pool_width']
+    stride = pool_param['stride']
+    
+    (N, C, H, W) = x.shape
+    out_H = 1 + (H - pool_height) / stride
+    out_W = 1 + (W - pool_width) / stride
+    
+    out = np.zeros((N, C, out_H, out_W))
+    
+    out_i = 0
+    for i in range(pool_height / 2, H, stride):
+        i_start = i - pool_height / 2
+        i_end = i + pool_height / 2 + pool_height % 2
+        out_j = 0
+        
+        for j in range(pool_width / 2, W, stride):
+            j_start = j - pool_width / 2
+            j_end = j + pool_width / 2 + pool_width % 2
+            out[:, :, out_i, out_j] = np.max(x[:, :, i_start:i_end, j_start:j_end],\
+                                             axis=(2, 3))
+            out_j += 1
+            
+        out_i += 1
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -576,7 +665,39 @@ def max_pool_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the max-pooling backward pass                           #
     ###########################################################################
-    pass
+    (x, pool_param) = cache
+    pool_height = pool_param['pool_height']
+    pool_width = pool_param['pool_width']
+    stride = pool_param['stride']
+    
+    (N, C, H, W) = x.shape
+    out_H = 1 + (H - pool_height) / stride
+    out_W = 1 + (W - pool_width) / stride
+    
+    dx = np.zeros_like(x)
+    
+    out_i = 0
+    for i in range(pool_height / 2, H, stride):
+        i_start = i - pool_height / 2
+        i_end = i + pool_height / 2 + pool_height % 2
+        out_j = 0
+        
+        for j in range(pool_width / 2, W, stride):
+            j_start = j - pool_width / 2
+            j_end = j + pool_width / 2 + pool_width % 2
+            
+            for k in range(C):
+                x_flat = x[:, k, i_start:i_end, j_start:j_end].reshape(N, -1)
+                ind_flat = np.argmax(x_flat, axis=1)
+                ind_rows, ind_cols = np.unravel_index(ind_flat, (pool_height, pool_width))
+                ind_rows += i_start
+                ind_cols += j_start
+                
+                dx[range(N), k, ind_rows, ind_cols] = dout[range(N), k, out_i, out_j]
+            
+            out_j += 1
+            
+        out_i += 1
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################

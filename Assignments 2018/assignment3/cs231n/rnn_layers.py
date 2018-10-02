@@ -189,10 +189,9 @@ def word_embedding_forward(x, W):
     #                                                                            #
     # HINT: This can be done in one line using NumPy's array indexing.           #
     ##############################################################################
-    N, T = x.shape
     V, D = W.shape
     
-    out = W[x.reshape(-1), :].reshape(N, T, -1)
+    out = W[x]
     cache = (x, V, D)
     ##############################################################################
     #                               END OF YOUR CODE                             #
@@ -225,8 +224,7 @@ def word_embedding_backward(dout, cache):
     x, V, D = cache
     
     dW = np.zeros((V, D))
-    np.add.at(dW, [x.reshape(-1, 1), range(D)],\
-              dout.reshape(-1, D))
+    np.add.at(dW, x, dout)
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
@@ -335,44 +333,15 @@ def lstm_step_backward(dnext_h, dnext_c, cache):
     da_g = (dnext_c + dnext_h * dnext_h_dnext_c) * dnext_c_da_g
     da_i = (dnext_c + dnext_h * dnext_h_dnext_c) * dnext_c_da_i
     da_o = dnext_h * np.tanh(next_c) * doda_o
+    da_i_f_o_g = np.hstack((da_i, da_f, da_o, da_g))
     
-    # dx
-    dx = np.zeros_like(x)
-    dx += np.dot(da_f, Wx[:, H:2*H].T)
-    dx += np.dot(da_g, Wx[:, 3*H:].T)
-    dx += np.dot(da_i, Wx[:, :H].T)
-    dx += np.dot(da_o, Wx[:, 2*H:3*H].T)
-    
-    # dprev_h
-    dprev_h = np.zeros_like(prev_h)
-    dprev_h += np.dot(da_f, Wh[:, H:2*H].T)
-    dprev_h += np.dot(da_g, Wh[:, 3*H:].T)
-    dprev_h += np.dot(da_i, Wh[:, :H].T)
-    dprev_h += np.dot(da_o, Wh[:, 2*H:3*H].T)
-    
-    # dprev_c
+    # gradients
+    dx = np.dot(da_i_f_o_g, Wx.T)
+    dprev_h = np.dot(da_i_f_o_g, Wh.T)
     dprev_c = dnext_c * f + dnext_h * dnext_h_dnext_c * f
-    
-    # dWx
-    dWx = np.zeros_like(Wx)
-    dWx[:, H:2*H] = np.dot(x.T, da_f)
-    dWx[:, 3*H:] = np.dot(x.T, da_g)
-    dWx[:, :H] = np.dot(x.T, da_i)
-    dWx[:, 2*H:3*H] = np.dot(x.T, da_o)
-
-    # dWh
-    dWh = np.zeros_like(Wh)
-    dWh[:, H:2*H] = np.dot(prev_h.T, da_f)
-    dWh[:, 3*H:] = np.dot(prev_h.T, da_g)
-    dWh[:, :H] = np.dot(prev_h.T, da_i)
-    dWh[:, 2*H:3*H] = np.dot(prev_h.T, da_o)
-    
-    # db
-    db = np.zeros(4 * H)
-    db[H:2*H] = np.sum(da_f, axis=0)
-    db[3*H:] = np.sum(da_g, axis=0)
-    db[:H] = np.sum(da_i, axis=0)
-    db[2*H:3*H] = np.sum(da_o, axis=0)
+    dWx = np.dot(x.T, da_i_f_o_g)
+    dWh = np.dot(prev_h.T, da_i_f_o_g)
+    db = np.sum(da_i_f_o_g, axis=0)
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################

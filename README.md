@@ -14,11 +14,11 @@ Spring 2018 assignments and some notes from the Stanford CS class CS231n: [Convo
 - [x] Q2: Batch Normalization
 - [x] Q3: Dropout
 - [x] Q4: Convolutional Networks
-- [x] Q5: PyTorch / TensorFlow on CIFAR-10
+- [x] Q5: TensorFlow & PyTorch on CIFAR-10
 
 ### Assignment 3
 - [x] Q1: Image Captioning with Vanilla RNNs
 - [x] Q2: Image Captioning with LSTMs
-- [ ] Q3: Network Visualization: Saliency maps, Class Visualization, and Fooling Images
+- [x] Q3: Network Visualization: Saliency maps, Class Visualization, and Fooling Images (TensorFlow)
 - [ ] Q4: Style Transfer
 - [ ] Q5: Generative Adversarial Networks

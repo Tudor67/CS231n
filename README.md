@@ -20,5 +20,5 @@ Spring 2018 assignments and some notes from the Stanford CS class CS231n: [Convo
 - [x] Q1: Image Captioning with Vanilla RNNs
 - [x] Q2: Image Captioning with LSTMs
 - [x] Q3: Network Visualization: Saliency maps, Class Visualization, and Fooling Images (TensorFlow & PyTorch)
-- [ ] Q4: Style Transfer
+- [x] Q4: Style Transfer (TensorFlow)
 - [ ] Q5: Generative Adversarial Networks
